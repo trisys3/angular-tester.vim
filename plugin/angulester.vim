@@ -8,7 +8,7 @@ g:loaded_angulester_plugin = 1
 " At some point, these should maybe be put into another file
 let s:default_runners = {'javascript': 'karma', 'ruby': 'rspec'}
 
-if !exists(g:angulester_runner)
+if !exists('g:angulester_runner')
   let g:angulester_runner = s:default_runners[&filetype]
 endif
 
@@ -25,7 +25,7 @@ function! AngulesterTest(...) abort
   if AngulesterFileIsSpec
     let regular_file = @%
 
-    if !exists g:angulester_{&filetype}_{runner}_spec_sub
+    if !exists('g:angulester_{&filetype}_{runner}_spec_sub')
       let g:angulester_{&filetype}_{runner}_spec_sub = ''
     endif
 
@@ -45,7 +45,7 @@ function! AngulesterTest(...) abort
   else
     let spec_file = @%
 
-    if !exists g:angulester_{&filetype}_{runner}_regular_sub
+    if !exists('g:angulester_{&filetype}_{runner}_regular_sub')
       let g:angulester_{&filetype}_{runner}_regular_sub = ''
     endif
 
@@ -109,7 +109,7 @@ function! AngulesterSetLocList(errors) abort
 endfunction
 
 function! AngulesterGetTestPrgs()
-  if !exists(g:angulester_tester_types)
+  if !exists('g:angulester_tester_types')
     let g:angulester_tester_types = []
   endif
 
