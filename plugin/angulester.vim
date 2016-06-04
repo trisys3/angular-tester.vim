@@ -2,14 +2,23 @@
 if exists('g:loaded_angulester_plugin')
   finish
 endif
-g:loaded_angulester_plugin = 1
+let g:loaded_angulester_plugin = 1
 
 " Default runners for each filetype
 " At some point, these should maybe be put into another file
 let s:default_runners = {'javascript': 'karma', 'ruby': 'rspec'}
 
+echo &filetype
+
 if !exists('g:angulester_runner')
-  let g:angulester_runner = s:default_runners[&filetype]
+  if exists('s:default_runners[&filetype]')
+    let g:angulester_runner = s:default_runners[&filetype]
+  else
+    " if we do not have a runner type yet, finish
+    " TODO: Add some more autocmds before this so we can source the file if
+    " a filetype/plugin is found
+    finish
+  endif
 endif
 
 " user commands
