@@ -6,10 +6,7 @@ g:loaded_angulester_plugin = 1
 
 " Default runners for each filetype
 " At some point, these should maybe be put into another file
-let s:default_runners = {
-  javascript: 'karma',
-  ruby: 'rspec'
-}
+let s:default_runners = {javascript: 'karma', ruby: 'rspec'}
 
 if !exists(g:angulester_runner)
   let g:angulester_runner = s:default_runners[&filetype]
