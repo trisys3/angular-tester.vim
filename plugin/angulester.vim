@@ -5,21 +5,7 @@ endif
 let g:loaded_angulester_plugin = 1
 
 " Default runners for each filetype
-" At some point, these should maybe be put into another file
 let s:default_runners = {'javascript': 'karma', 'ruby': 'rspec'}
-
-echo &filetype
-
-if !exists('g:angulester_runner')
-  if exists('s:default_runners[&filetype]')
-    let g:angulester_runner = s:default_runners[&filetype]
-  else
-    " if we do not have a runner type yet, finish
-    " TODO: Add some more autocmds before this so we can source the file if
-    " a filetype/plugin is found
-    finish
-  endif
-endif
 
 " user commands
 command! -nargs=* AngulesterTest call AngulesterTest(<f-args>)
@@ -125,4 +111,20 @@ function! AngulesterGetTestPrgs()
   for tester in g:angulester_tester_types
     execute 'runtime! plugin/test_runners/' . &filetype . '/' . tester . '.vim'
   endfor
+endfunction
+
+function! _angulester_get_runners()
+  " sometimes vim does not detect the filetype or detects it wrong
+  " or plugin managers like vundle require turning it off first,
+  " so detect it manually just in case
+  filetype detect
+
+  " TODO: Investigate caching angulester_runners
+  if exists('s:default_runners[&filetype]')
+    let g:angulester_runner = s:default_runners[&filetype]
+  else
+    let g:angulester_runners = []
+  endif
+
+  return g:angulester_runners
 endfunction
