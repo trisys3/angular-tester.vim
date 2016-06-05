@@ -4,9 +4,6 @@ if exists('g:loaded_angulester_plugin')
 endif
 let g:loaded_angulester_plugin = 1
 
-" Default runners for each filetype
-let s:default_runners = {'javascript': 'karma', 'ruby': 'rspec'}
-
 " user commands
 command! -nargs=* AngulesterTest call AngulesterTest(<f-args>)
 " command! -nargs=? AngulesterInfo call AngulesterInfo(<f-args>)
