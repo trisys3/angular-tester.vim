@@ -8,8 +8,6 @@ let g:loaded_angulester_plugin = 1
 " At some point, these should maybe be put into another file
 let s:default_runners = {'javascript': 'karma', 'ruby': 'rspec'}
 
-echo &filetype
-
 if !exists('g:angulester_runner')
   if exists('s:default_runners[&filetype]')
     let g:angulester_runner = s:default_runners[&filetype]
