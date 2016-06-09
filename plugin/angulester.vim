@@ -17,7 +17,7 @@ function! AngulesterTest(...) abort
   else
     let filename = @%
   endif
-  s:GetRunners()
+  call s:GetRunners()
   let runner = g:angulester_runners
   let regular_file = s:GetRegFile()
   let spec_file = s:GetSpecFile()
