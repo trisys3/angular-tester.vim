@@ -18,13 +18,13 @@ function! AngulesterTest(...) abort
     let filename = @%
   endif
   s:GetRunners()
-  let runner = g:angulester_runner
+  let runner = g:angulester_runners
   let regular_file = s:GetRegFile()
   let spec_file = s:GetSpecFile()
 endfunction
 
 function! s:GetSpecFile(...)
-  let runner = g:angular_runner
+  let runner = g:angular_runners
 
   if a:0 >= 1
     let filename = a:1
@@ -148,7 +148,7 @@ function! s:GetRunners()
 
   " TODO: Investigate caching angulester_runners
   if exists('s:default_runners[&filetype]')
-    let g:angulester_runner = s:default_runners[&filetype]
+    let g:angulester_runners = s:default_runners[&filetype]
   else
     let g:angulester_runners = []
   endif
