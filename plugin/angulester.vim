@@ -4,6 +4,8 @@ if exists('g:loaded_angulester_plugin')
 endif
 let g:loaded_angulester_plugin = 1
 
+let s:default_runners = {'javascript': 'karma'}
+
 " user commands
 command! -nargs=* AngulesterTest call AngulesterTest(<f-args>)
 " command! -nargs=? AngulesterInfo call AngulesterInfo(<f-args>)
@@ -19,7 +21,7 @@ function! AngulesterTest(...) abort
   endif
   call s:GetRunners()
   let runner = g:angulester_runners
-  let regular_file = s:GetRegFile()
+  let regular_file = s:GetRegularFile()
   let spec_file = s:GetSpecFile()
 endfunction
 
