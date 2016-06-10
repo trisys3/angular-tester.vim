@@ -19,8 +19,7 @@ function! AngulesterTest(...) abort
   else
     let filename = @%
   endif
-  call s:GetRunners()
-  let runner = g:angulester_runners
+  let runner = s:GetRunners()
   let regular_file = s:GetRegularFile()
   let spec_file = s:GetSpecFile()
 endfunction
@@ -89,17 +88,23 @@ function s:GetRegularFile(...)
   return substitute(regular_regex, regular_replace, '')
 endfunction
 
-function! s:FileIsSpec()
-  " force file to be a spec, should only be set by users & other plugins
-  if g:angulester_is_spec || g:angulester_{&filetype}_{runner}_is_spec
-    return 1
-  endif
-  " force file to not be a spec, see disclaimer above
-  if g:angulester_is_not_spec || g:angulester_{&filetype}_{runner}_is_not_spec
-    return
+function! s:FileIsSpec(...)
+  if a:0
+    let filename = a:1
+
+    " force file to be a spec, should only be set by users & other plugins
+    if g:angulester_is_spec || g:angulester_{&filetype}_{runner}_is_spec
+      return 1
+    endif
+    " force file to not be a spec, see disclaimer above
+    if g:angulester_is_not_spec || g:angulester_{&filetype}_{runner}_is_not_spec
+      return
+    endif
+  else
+    let filename = @%
   endif
 
-  if match(@%, g:angulester_{&filetype}_{runner}_spec_regex) != -1
+  if match(filename, g:angulester_{&filetype}_{runner}_spec_regex) != -1
     return 1
   endif
 endfunction
