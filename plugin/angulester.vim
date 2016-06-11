@@ -6,6 +6,13 @@ let g:loaded_angulester_plugin = 1
 
 let s:default_runners = {'javascript': 'karma'}
 
+if !exists('g:angulester_is_spec')
+  let g:angulester_is_spec = 0
+endif
+if !exists('g:angulester_is_not_spec')
+  let g:angulester_is_not_spec = 0
+endif
+
 " user commands
 command! -nargs=* AngulesterTest call AngulesterTest(<f-args>)
 " command! -nargs=? AngulesterInfo call AngulesterInfo(<f-args>)
@@ -25,7 +32,7 @@ function! AngulesterTest(...) abort
 endfunction
 
 function! s:GetSpecFile(...)
-  let runner = g:angular_runners
+  let runner = s:GetRunners()
 
   if a:0 >= 1
     let filename = a:1
@@ -53,11 +60,11 @@ function! s:GetSpecFile(...)
     let spec_replace = ''
   endif
 
-  return substitute(@%, spec_regex, spec_replace, '')
+  return substitute(filename, spec_regex, spec_replace, '')
 endfunction
 
 function s:GetRegularFile(...)
-  let runner = g:angular_runner
+  let runner = s:GetRunners()
 
   if a:0 >= 1
     let filename = a:1
@@ -85,23 +92,29 @@ function s:GetRegularFile(...)
     let regular_replace = ''
   endif
 
-  return substitute(regular_regex, regular_replace, '')
+  return substitute(filename, regular_regex, regular_replace, '')
 endfunction
 
 function! s:FileIsSpec(...)
+  let runner = s:GetRunners()
+
   if a:0
     let filename = a:1
+  else
+    let filename = @%
 
     " force file to be a spec, should only be set by users & other plugins
-    if g:angulester_is_spec || g:angulester_{&filetype}_{runner}_is_spec
+    if g:angulester_is_spec
       return 1
     endif
     " force file to not be a spec, see disclaimer above
-    if g:angulester_is_not_spec || g:angulester_{&filetype}_{runner}_is_not_spec
+    if g:angulester_is_not_spec
       return
     endif
-  else
-    let filename = @%
+  endif
+
+  if !exists('g:angulester_{&filetype}_{runner}_spec_regex')
+    let g:angulester_{&filetype}_{runner}_spec_regex = '/\.spec/'
   endif
 
   if match(filename, g:angulester_{&filetype}_{runner}_spec_regex) != -1
@@ -153,12 +166,12 @@ function! s:GetRunners()
   " so detect it manually just in case
   filetype detect
 
-  " TODO: Investigate caching angulester_runners
+  " TODO: Investigate caching default_runners
   if exists('s:default_runners[&filetype]')
-    let g:angulester_runners = s:default_runners[&filetype]
+    let runners = s:default_runners[&filetype]
   else
-    let g:angulester_runners = []
+    let runners = []
   endif
 
-  return g:angulester_runners
+  return runners
 endfunction
