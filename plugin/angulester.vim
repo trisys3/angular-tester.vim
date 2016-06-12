@@ -4,7 +4,7 @@ if exists('g:loaded_angulester_plugin')
 endif
 let g:loaded_angulester_plugin = 1
 
-let s:default_runners = {'javascript': 'karma'}
+let s:default_runners = {'javascript': ['karma']}
 
 if !exists('g:angulester_is_spec')
   let g:angulester_is_spec = 0
@@ -26,21 +26,25 @@ function! AngulesterTest(...) abort
   else
     let filename = @%
   endif
-  let runner = s:GetRunners()
-  let regular_file = s:GetRegularFile()
-  let spec_file = s:GetSpecFile()
+  let runners = s:GetRunners()
+  let regular_file = s:GetRegularFile(filename, runners[0])
+  let spec_file = s:GetSpecFile(filename, runners[0])
 endfunction
 
 function! s:GetSpecFile(...)
-  let runner = s:GetRunners()
-
   if a:0 >= 1
     let filename = a:1
   else
     let filename = @%
   endif
 
-  if !s:FileIsSpec(filename)
+  if a:0 >= 2
+    let runner = a:2
+  else
+    let runner = s:GetRunners()[0]
+  endif
+
+  if !s:FileIsSpec(filename, runner)
     return filename
   endif
 
@@ -64,15 +68,19 @@ function! s:GetSpecFile(...)
 endfunction
 
 function s:GetRegularFile(...)
-  let runner = s:GetRunners()
-
   if a:0 >= 1
     let filename = a:1
   else
     let filename = @%
   endif
 
-  if s:FileIsSpec(filename)
+  if a:0 >= 2
+    let runner = a:2
+  else
+    let runner = s:GetRunners()[0]
+  endif
+
+  if s:FileIsSpec(filename, runner)
     return filename
   endif
 
@@ -96,8 +104,6 @@ function s:GetRegularFile(...)
 endfunction
 
 function! s:FileIsSpec(...)
-  let runner = s:GetRunners()
-
   if a:0
     let filename = a:1
   else
@@ -111,6 +117,12 @@ function! s:FileIsSpec(...)
     if g:angulester_is_not_spec
       return
     endif
+  endif
+
+  if a:0 >= 2
+    let runner = a:2
+  else
+    let runner = s:GetRunners()[0]
   endif
 
   if !exists('g:angulester_{&filetype}_{runner}_spec_regex')
@@ -135,6 +147,7 @@ function! s:GetValid(errors) abort
   try
     silent lolder
   catch
+    " usually this means we are the first list, which is fine
   endtry
 
   return validErrors
@@ -150,13 +163,11 @@ function! s:SetLocList(errors) abort
   return errors
 endfunction
 
-function! s:GetTestPrgs()
-  if !exists('g:angulester_tester_types')
-    let g:angulester_tester_types = []
-  endif
+function! s:GetTestPrgs(...)
+  let runners = s:GetRunners()
 
-  for tester in g:angulester_tester_types
-    execute 'runtime! plugin/test_runners/' . &filetype . '/' . tester . '.vim'
+  for runner in runners
+    execute 'runtime! plugin/test_runners/' . &filetype . '/' . runner . '.vim'
   endfor
 endfunction
 
@@ -166,12 +177,24 @@ function! s:GetRunners()
   " so detect it manually just in case
   filetype detect
 
-  " TODO: Investigate caching default_runners
+  " TODO: Investigate caching default_runners for some amount of time
+  if exists('g:angulester_default_runners')
+    let l:runner_list = g:angulester_default_runners
+    " if type(varname) is 3, varname is an array
+    if type(l:runner_list) != 3
+      let l:runner_list = [l:runner_list]
+    endif
+
+    return g:angulester_default_runners
+  endif
+  if exists('g:angulester_runners[&filetype]')
+    return g:angulester_runners[&filetype]
+  endif
   if exists('s:default_runners[&filetype]')
-    let runners = s:default_runners[&filetype]
-  else
-    let runners = []
+    return s:default_runners[&filetype]
   endif
 
-  return runners
+  " NOTE: This should generally be caught by script functions, but not by user
+  " actions
+  echoerr 'No runner(s) found for filetype ' . &filetype
 endfunction
