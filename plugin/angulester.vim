@@ -5,6 +5,8 @@ endif
 let g:loaded_angulester_plugin = 1
 
 let s:default_runners = {'javascript': ['karma']}
+let s:angulester_vendor_files = {}
+let s:angulester_other_files = {}
 
 if !exists('g:angulester_is_spec')
   let g:angulester_is_spec = 0
@@ -27,8 +29,20 @@ function! AngulesterTest(...) abort
     let filename = @%
   endif
   let runners = s:GetRunners()
-  let regular_file = s:GetRegularFile(filename, runners[0])
-  let spec_file = s:GetSpecFile(filename, runners[0])
+  for runner in runners
+    let regular_file = s:GetRegularFile(filename, runner)
+    let spec_file = s:GetSpecFile(filename, runner)
+    if exists('g:angulester_vendor_files')
+      let other_files = g:angulester_vendor_files
+    elseif exists('s:angulester_vendor_files[runner]')
+      let vendor_files = s:angulester_vendor_files[runner]
+    endif
+    if exists('g:angulester_other_files')
+      let other_files = g:angulester_other_files
+    elseif exists('s:angulester_other_files[runner]')
+      let other_files = s:angulester_other_files[runner]
+    endif
+  endfor
 endfunction
 
 function! s:GetSpecFile(...)
@@ -164,7 +178,15 @@ function! s:SetLocList(errors) abort
 endfunction
 
 function! s:GetTestPrgs(...)
-  let runners = s:GetRunners()
+  if a:0
+    let runners = a:1
+    " if type(var) is 3, var is an array
+    if type(runners) != 3
+      let runners = [runners]
+    endif
+  else
+    let runners = s:GetRunners()
+  endif
 
   for runner in runners
     execute 'runtime! plugin/test_runners/' . &filetype . '/' . runner . '.vim'
@@ -180,18 +202,18 @@ function! s:GetRunners()
   " TODO: Investigate caching default_runners for some amount of time
   if exists('g:angulester_default_runners')
     let l:runner_list = g:angulester_default_runners
-    " if type(varname) is 3, varname is an array
+  elseif exists('g:angulester_runners[&filetype]')
+    let l:runner_list = g:angulester_runners[&filetype]
+  elseif exists('s:default_runners[&filetype]')
+    let l:runner_list = s:default_runners[&filetype]
+  endif
+
+  if exists('l:runner_list')
+    " is the runner list a list?
     if type(l:runner_list) != 3
       let l:runner_list = [l:runner_list]
     endif
-
-    return g:angulester_default_runners
-  endif
-  if exists('g:angulester_runners[&filetype]')
-    return g:angulester_runners[&filetype]
-  endif
-  if exists('s:default_runners[&filetype]')
-    return s:default_runners[&filetype]
+    return l:runner_list
   endif
 
   " NOTE: This should generally be caught by script functions, but not by user
